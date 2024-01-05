@@ -13,17 +13,23 @@ function extractSub(htmlCont) {
         const endIndex = htmlCont.indexOf('\'),ur={', startIndex);
         if (endIndex !== -1) {
             const jsonString = htmlCont.substring(startIndex + startPattern.length, endIndex);
-            // Trate os caracteres de escape
+            
+            // Sanitiza a string JSON para remover caracteres de escape
             const sanitizedJsonString = jsonString
                 .replace(/\\n/g, '\n')  // Substitua \n por nova linha
                 .replace(/\\r/g, '\r')  // Substitua \r por retorno de carro
                 .replace(/\\t/g, '\t')  // Substitua \t por tabulação
                 // Adicione outras substituições conforme necessário
                 .replace(/\\\\/g, '\\');  // Substitua \\ por \
-            
+
             try {
+                // Analisa a string JSON sanitizada
                 const jsonObject = JSON.parse(sanitizedJsonString);
-                console.log(jsonObject); // Imprime o objeto JavaScript no console
+
+                // Converte o objeto de volta para uma string JSON formatada com tabulação
+                const formattedJsonString = JSON.stringify(jsonObject, null, 2);
+                
+                console.log(formattedJsonString); // Imprime o objeto JavaScript formatado no console
             } catch (error) {
                 console.log('Error parsing JSON:', error);
             }
@@ -34,7 +40,6 @@ function extractSub(htmlCont) {
         console.log('Start pattern not found.');
     }
 }
-
 // Solicitação inicial para obter o conteúdo HTML
 fetch('https://conexo.ws/')
     .then(response => response.text())

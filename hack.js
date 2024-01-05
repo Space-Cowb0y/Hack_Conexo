@@ -1,39 +1,56 @@
 const cheerio = require('cheerio');
-
+const fs = require('fs')
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 console.warn = () => {};
-.then(html => {
-    const $ = cheerio.load(html);
+/* const getMain = async () => {
+	const response = await fetch('https://conexo.ws/');
+	const body = await response.text();
+	console.log(body); // prints a chock full of HTML richness
+    //body.split('\n')
+	return body;
+}; */
 
-    // Encontre o script que contém "ir=JSON.parse('"
-    const scriptWithIrJSONParse = $('script').filter((_, el) => {
-        const content = $(el).html();
-        return content && content.includes("ir=JSON.parse('");
-    }).first(); // Use first() para pegar o primeiro script que corresponde
+//console.log(getMain())
 
-    if (scriptWithIrJSONParse.length > 0) {
-        // Extraia a parte do script que contém "ir=JSON.parse('"
-        const scriptContent = scriptWithIrJSONParse.html();
-        
-        // Aqui você pode fazer mais manipulações no scriptContent, se necessário.
-        console.log(scriptContent); // Isso mostrará todo o conteúdo do script.
-        
-        // Agora, se você quiser apenas a parte específica que vem depois de "ir=JSON.parse('"
-        const startIndex = scriptContent.indexOf("ir=JSON.parse('") + 15; // 15 é o comprimento da string "ir=JSON.parse('"
-        const endIndex = scriptContent.indexOf("'),ur={");
-        
-        if (startIndex !== -1 && endIndex !== -1) {
-            const desiredPart = scriptContent.substring(startIndex, endIndex);
-            console.log(desiredPart); // Isso mostrará apenas a parte desejada.
-        } else {
-            throw new Error('Failed to extract desired part from script content.');
+fetch('https://conexo.ws/')
+    .then(response =>response.text())
+    .then(html => {
+        var doc = cheerio.load(html) //string
+        const srcLinks = doc('script[src^="/static/js/"]').map((_,el)=> doc(el).attr('src')).get();
+        if (srcLinks.length > 0 ){
+            return fetch('https://conexo.ws'+srcLinks[0]);
+        }else{
+            throw new Error('links em src não encontrados');
         }
-    } else {
-        throw new Error('No script containing "ir=JSON.parse(\'" found.');
+    })
+    .then(response => response.text())
+    .then(html => {
+        fs.writeFileSync('resposta.html', html, 'utf-8')
+        const $ = cheerio.load(html);
+        fs.readFile('resposta.html', 'utf-8', (err, data) => {
+            if(err){
+                console.log('error reading the file',err);
+                return;
+            }
+        extractSub(data)
+        })
+    })
+    .catch(err => {
+        console.log('Failed to fetch page:', err);
+    });
+
+
+function extractSub(htmlCont){
+    const regex = /ir=JSON\.parse\('([^']+)'\),ur={/;
+    const match =htmlCont.match(regex);
+
+    if (match && match[1]){
+        const desireP = match[1]
+        console.log(desireP)
+    }else{
+        console.log("nada enontrado")
     }
-})
-.catch(err => {
-    console.log('Failed to fetch page:', err);
-});
+}
+
 

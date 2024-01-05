@@ -3,66 +3,37 @@ const cheerio = require('cheerio');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 console.warn = () => {};
-/* const getMain = async () => {
-	const response = await fetch('https://conexo.ws/');
-	const body = await response.text();
-	console.log(body); // prints a chock full of HTML richness
-    //body.split('\n')
-	return body;
-}; */
+.then(html => {
+    const $ = cheerio.load(html);
 
-//console.log(getMain())
+    // Encontre o script que contém "ir=JSON.parse('"
+    const scriptWithIrJSONParse = $('script').filter((_, el) => {
+        const content = $(el).html();
+        return content && content.includes("ir=JSON.parse('");
+    }).first(); // Use first() para pegar o primeiro script que corresponde
 
-
-
-const array4 = fetch('https://conexo.ws/')
-    .then(function(response) {
-        // When the page is loaded convert it to text
-        return response.text()
-    })
-    .then(function(html) {
-        var doc = cheerio.load(html).html() //string
-
-        const doc1 = doc.split(' ') //array
-        console.log(doc1)
-        const array1 = doc1.filter((word) => word.match('src="/static/js/'))
-        const array2 = array1.map(function (string){
-            return string.split('">')[0];
-        })
-        return array2
-    })
-    .then(function(array2){
-        const array3 = array2.map(function (string){
-            return string.split('src="')[1];
-        })
-        return array3
-    })
-    .then(function(array3){
-        fetch('https://conexo.ws'+array3[0])
-    })
-    .then(function(response) {
-        return response.text()
-    })
-    .then(function(html) {
-        var doc = cheerio.load(html).html() //string
-
-        const doc1 = doc.split(' ') //array
-        console.log(doc1)
-        const array1 = doc1.filter((word) => word.match("ir=JSON.parse('"))
-        const array2 = array1.map(function (string){
-            return string.split("'),ur={")[0];
-        })
-        return array2
-    })
-    .then(function(array2){
-        const array4 = array2.map(function (string){
-            return string.split("ir=JSON.parse('")[1];
-        })
-        console.log(array4)
-        return array4
-    })
-    .catch(function(err) {  
-        console.log('Failed to fetch page: ', err);  
-    });
-
+    if (scriptWithIrJSONParse.length > 0) {
+        // Extraia a parte do script que contém "ir=JSON.parse('"
+        const scriptContent = scriptWithIrJSONParse.html();
+        
+        // Aqui você pode fazer mais manipulações no scriptContent, se necessário.
+        console.log(scriptContent); // Isso mostrará todo o conteúdo do script.
+        
+        // Agora, se você quiser apenas a parte específica que vem depois de "ir=JSON.parse('"
+        const startIndex = scriptContent.indexOf("ir=JSON.parse('") + 15; // 15 é o comprimento da string "ir=JSON.parse('"
+        const endIndex = scriptContent.indexOf("'),ur={");
+        
+        if (startIndex !== -1 && endIndex !== -1) {
+            const desiredPart = scriptContent.substring(startIndex, endIndex);
+            console.log(desiredPart); // Isso mostrará apenas a parte desejada.
+        } else {
+            throw new Error('Failed to extract desired part from script content.');
+        }
+    } else {
+        throw new Error('No script containing "ir=JSON.parse(\'" found.');
+    }
+})
+.catch(err => {
+    console.log('Failed to fetch page:', err);
+});
 

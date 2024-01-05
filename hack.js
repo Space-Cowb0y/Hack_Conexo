@@ -3,10 +3,31 @@ const cheerio = require('cheerio');
 const fs = require('fs');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
 console.warn = () => {};
 
-// Faz a primeira solicitação para obter o conteúdo HTML
+// Função para extrair a substring ir=JSON.parse('...') e converter em um objeto JSON
+function extractSub(htmlCont) {
+    const startPattern = 'ir=JSON.parse(\'';
+    const startIndex = htmlCont.indexOf(startPattern);
+    if (startIndex !== -1) {
+        const endIndex = htmlCont.indexOf('\'),ur={', startIndex);
+        if (endIndex !== -1) {
+            const jsonString = htmlCont.substring(startIndex + startPattern.length, endIndex);
+            try {
+                const jsonObject = JSON.parse(jsonString);
+                console.log(jsonObject); // Imprime o objeto JavaScript no console
+            } catch (error) {
+                console.log('Error parsing JSON:', error);
+            }
+        } else {
+            console.log('End pattern not found.');
+        }
+    } else {
+        console.log('Start pattern not found.');
+    }
+}
+
+// Solicitação inicial para obter o conteúdo HTML
 fetch('https://conexo.ws/')
     .then(response => response.text())
     .then(html => {
@@ -36,21 +57,3 @@ fetch('https://conexo.ws/')
     .catch(err => {
         console.log('Failed to fetch page:', err);
     });
-
-// Função para extrair a substring ir=JSON.parse('...') e converter em um objeto JSON
-function extractSub(htmlCont) {
-    const regex = /ir=JSON\.parse\('([^']+)'\)/;
-    const match = htmlCont.match(regex);
-
-    if (match && match[1]) {
-        const jsonString = match[1];
-        try {
-            const jsonObject = JSON.parse(jsonString);
-            console.log(jsonObject); // Imprime o objeto JavaScript no console
-        } catch (error) {
-            console.log('Error parsing JSON:', error);
-        }
-    } else {
-        console.log("Substring not found.");
-    }
-}

@@ -1,4 +1,3 @@
-const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const fs = require('fs');
 
@@ -13,15 +12,18 @@ function extractSub(htmlCont) {
         const endIndex = htmlCont.indexOf('\'),ur={', startIndex);
         if (endIndex !== -1) {
             const jsonString = htmlCont.substring(startIndex + startPattern.length, endIndex);
-            
+            const sanitizedJsonString = ''
+            fs.writeFileSync('resposta.json', jsonString, 'utf-8')           
             // Sanitiza a string JSON para remover caracteres de escape
-            const sanitizedJsonString = jsonString
-                .replace(/\\n/g, '\n')  // Substitua \n por nova linha
-                .replace(/\\r/g, '\r')  // Substitua \r por retorno de carro
-                .replace(/\\t/g, '\t')  // Substitua \t por tabulação
-                // Adicione outras substituições conforme necessário
-                .replace(/\\\\/g, '\\');  // Substitua \\ por \
+                sanitizedJsonString = jsonString
+                    .replace(/\\n/g, '\n')  // Substitua \n por nova linha
+                    .replace(/\\r/g, '\r')  // Substitua \r por retorno de carro
+                    .replace(/\\t/g, '\t')  // Substitua \t por tabulação
+                    // Adicione outras substituições conforme necessário
+                    .replace(/\\/g, '')
+                    .replace(/\\\\/g, '\\')  // Substitua \\ por \
 
+                    .split('{');
             try {
                 // Analisa a string JSON sanitizada
                 const jsonObject = JSON.parse(sanitizedJsonString);
@@ -40,6 +42,8 @@ function extractSub(htmlCont) {
         console.log('Start pattern not found.');
     }
 }
+
+
 // Solicitação inicial para obter o conteúdo HTML
 fetch('https://conexo.ws/')
     .then(response => response.text())

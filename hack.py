@@ -29,7 +29,7 @@ index_E = html.find("'),ur={")
 resposta = html[index_S:index_E]
 
 y = json.dumps(resposta, separators=(",", ":"))    
-with open("C:\\Users\\Public\\proj\\campeonato_conexo\\data.json", "w") as text_file:
+with open("data.json", "w") as text_file:
     a = json.dump(resposta, text_file, indent=1)
             
 

@@ -32,7 +32,7 @@ for i in resposta:
 
 
 y = json.dumps(resposta, separators=(",", ":"))    
-with open("C:\\Users\\e5693423\\OneDrive - FIS\\Documents\\proj\\campeonato_conexo\\data.json", "w") as text_file:
+with open("data.json", "w") as text_file:
     a = json.dump(resposta, text_file, indent=1)
     
             
